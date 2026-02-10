@@ -82,7 +82,8 @@ function Library:CreateWindow()
     TabScroll.Position = UDim2.new(0,0,0,80)
     TabScroll.ScrollBarThickness = 0
     TabScroll.BackgroundTransparency = 1
-    Instance.new("UIListLayout", TabScroll).Padding = UDim.new(0,2)
+    local TabLayout = Instance.new("UIListLayout", TabScroll)
+    TabLayout.Padding = UDim.new(0,2)
 
     local Content = Instance.new("Frame", Main)
     Content.Size = UDim2.new(1,-220,1,-20)
@@ -100,6 +101,7 @@ function Library:CreateWindow()
         L.TextSize = 10
         L.TextColor3 = Theme.Muted
         L.BackgroundTransparency = 1
+        L.TextXAlignment = Enum.TextXAlignment.Left
     end
 
     function Window:AddTab(name)
@@ -130,12 +132,6 @@ function Library:CreateWindow()
             Btn.BackgroundTransparency = 0.4
         end)
 
-        if Tabs == 1 then
-    Page.Visible = true
-    Btn.BackgroundTransparency = 0
-end
-
-
         local Tab = {}
 
         function Tab:AddGroup(title)
@@ -148,7 +144,8 @@ end
             Container.Size = UDim2.new(1,-30,1,-45)
             Container.Position = UDim2.new(0,15,0,40)
             Container.BackgroundTransparency = 1
-            Instance.new("UIListLayout", Container).Padding = UDim.new(0,10)
+            local Layout = Instance.new("UIListLayout", Container)
+            Layout.Padding = UDim.new(0,10)
 
             local Group = {}
 
@@ -166,7 +163,7 @@ end
                 L.TextSize = 14
                 L.TextColor3 = Theme.Text
                 L.BackgroundTransparency = 1
-                L.TextXAlignment = Left
+                L.TextXAlignment = Enum.TextXAlignment.Left
 
                 local Sw = Instance.new("TextButton", F)
                 Sw.Size = UDim2.new(0,36,0,18)
@@ -199,6 +196,7 @@ end
             return Group
         end
 
+        Tabs[#Tabs+1] = {Btn = Btn, Page = Page}
         return Tab
     end
 
