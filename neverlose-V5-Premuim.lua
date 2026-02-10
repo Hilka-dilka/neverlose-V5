@@ -51,19 +51,15 @@ function Library:CreateWindow()
     ScreenGui.IgnoreGuiInset = true
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
 
-    local Overlay = Instance.new("Frame", ScreenGui)
-    Overlay.Size = UDim2.new(1, 0, 1, 0); Overlay.BackgroundTransparency = 1; Overlay.ZIndex = 10000
-
-    local Main = Instance.new("Frame", ScreenGui)
+    -- ИСПОЛЬЗУЕМ CanvasGroup ДЛЯ ПЛАВНОЙ АНИМАЦИИ
+    local Main = Instance.new("CanvasGroup", ScreenGui)
     Main.Size = UDim2.new(0, 880, 0, 620)
     Main.Position = UDim2.new(0.5, -440, 0.5, -310)
     Main.BackgroundColor3 = Theme.Main
-    Main.ClipsDescendants = true
+    Main.GroupTransparency = 1 -- Начальное состояние (скрыто)
     ApplyStyle(Main, 10, true)
     
-    -- Анимация появления окна
-    Main.GroupTransparency = 1
-    TweenService:Create(Main, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {GroupTransparency = 0}):Play()
+    TweenService:Create(Main, TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {GroupTransparency = 0}):Play()
 
     local Sidebar = Instance.new("Frame", Main)
     Sidebar.Size = UDim2.new(0, 200, 1, 0)
@@ -82,11 +78,6 @@ function Library:CreateWindow()
     TabScroll.Size = UDim2.new(1, 0, 1, -160); TabScroll.Position = UDim2.new(0, 0, 0, 80); TabScroll.BackgroundTransparency = 1; TabScroll.ScrollBarThickness = 0
     local TabListLayout = Instance.new("UIListLayout", TabScroll); TabListLayout.SortOrder = "LayoutOrder"; TabListLayout.Padding = UDim.new(0, 2)
 
-    -- Профиль (Внизу)
-    local Profile = Instance.new("Frame", Sidebar)
-    Profile.Size = UDim2.new(1, 0, 0, 60); Profile.Position = UDim2.new(0, 0, 1, -70); Profile.BackgroundTransparency = 1
-    local User = Instance.new("TextLabel", Profile); User.Text = "disney13337"; User.Position = UDim2.new(0, 60, 0, 20); User.Font = "GothamBold"; User.TextColor3 = Theme.Text; User.TextSize = 13; User.TextXAlignment = "Left"; User.BackgroundTransparency = 1
-
     local ContentArea = Instance.new("Frame", Main)
     ContentArea.Size = UDim2.new(1, -220, 1, -20); ContentArea.Position = UDim2.new(0, 210, 0, 10); ContentArea.BackgroundTransparency = 1
 
@@ -104,19 +95,8 @@ function Library:CreateWindow()
         local Btn = Instance.new("TextButton", TabScroll)
         Btn.Size = UDim2.new(1, -30, 0, 38); Btn.Position = UDim2.new(0, 15, 0, 0); Btn.BackgroundColor3 = Theme.Element; Btn.BackgroundTransparency = 1; Btn.Text = "          " .. tabName; Btn.Font = "GothamMedium"; Btn.TextColor3 = Theme.Muted; Btn.TextSize = 13; Btn.TextXAlignment = "Left"; Btn.AutoButtonColor = false; Btn.LayoutOrder = Library.LayoutOrderNum; ApplyStyle(Btn, 6)
 
-        -- Ховер для вкладки
-        Btn.MouseEnter:Connect(function() 
-            if Btn.TextColor3 ~= Theme.Text then 
-                TweenService:Create(Btn, TweenInfo.new(0.2), {BackgroundTransparency = 0.8, TextColor3 = Color3.fromRGB(200, 200, 200)}):Play() 
-            end 
-        end)
-        Btn.MouseLeave:Connect(function() 
-            if Btn.TextColor3 ~= Theme.Text then 
-                TweenService:Create(Btn, TweenInfo.new(0.2), {BackgroundTransparency = 1, TextColor3 = Theme.Muted}):Play() 
-            end 
-        end)
-
-        local Page = Instance.new("Frame", ContentArea); Page.Size = UDim2.new(1, 0, 1, 0); Page.Visible = false; Page.BackgroundTransparency = 1
+        -- Page ТОЖЕ CanvasGroup ДЛЯ ПЕРЕКЛЮЧЕНИЯ
+        local Page = Instance.new("CanvasGroup", ContentArea); Page.Size = UDim2.new(1, 0, 1, 0); Page.Visible = false; Page.BackgroundTransparency = 1
 
         if isUnderDev then
             local DevLabel = Instance.new("TextLabel", Page)
@@ -126,7 +106,6 @@ function Library:CreateWindow()
         Btn.MouseButton1Click:Connect(function()
             for _, t in pairs(Tabs) do t.P.Visible = false; t.B.TextColor3 = Theme.Muted; t.B.BackgroundTransparency = 1 end
             Page.Visible = true; Btn.TextColor3 = Theme.Text; Btn.BackgroundTransparency = 0.5
-            -- Анимация контента
             Page.GroupTransparency = 1
             TweenService:Create(Page, TweenInfo.new(0.3), {GroupTransparency = 0}):Play()
         end)
@@ -136,29 +115,20 @@ function Library:CreateWindow()
 
         local Tab = {}
 
-        -- Система под-вкладок (78 скриншот)
         function Tab:AddSubTabs(names)
             local SubTabHolder = Instance.new("Frame", Page)
             SubTabHolder.Size = UDim2.new(0, 400, 0, 35); SubTabHolder.Position = UDim2.new(0.5, -200, 0, 5); SubTabHolder.BackgroundColor3 = Theme.Sidebar; ApplyStyle(SubTabHolder, 6, true)
-            
-            local List = Instance.new("UIListLayout", SubTabHolder); List.FillDirection = "Horizontal"; List.HorizontalAlignment = "Center"; List.Padding = UDim.new(0, 5)
-            
+            Instance.new("UIListLayout", SubTabHolder).FillDirection = "Horizontal"
             for _, sName in pairs(names) do
                 local sBtn = Instance.new("TextButton", SubTabHolder)
-                sBtn.Size = UDim2.new(0, 80, 1, 0); sBtn.BackgroundTransparency = 1; sBtn.Text = sName; sBtn.Font = "GothamBold"; sBtn.TextColor3 = Theme.Muted; sBtn.TextSize = 12
-                sBtn.MouseButton1Click:Connect(function()
-                    for _, b in pairs(SubTabHolder:GetChildren()) do if b:IsA("TextButton") then b.TextColor3 = Theme.Muted end end
-                    sBtn.TextColor3 = Theme.Accent
-                end)
+                sBtn.Size = UDim2.new(0, 100, 1, 0); sBtn.BackgroundTransparency = 1; sBtn.Text = sName; sBtn.Font = "GothamBold"; sBtn.TextColor3 = Theme.Muted; sBtn.TextSize = 12
             end
-            SubTabHolder:GetChildren()[2].TextColor3 = Theme.Accent -- Первая активна
         end
 
         function Tab:AddGroup(title)
             local G = Instance.new("Frame", Page); G.BackgroundColor3 = Theme.Group; ApplyStyle(G, 8, true)
             local Container = Instance.new("Frame", G); Container.Size = UDim2.new(1, -30, 1, -45); Container.Position = UDim2.new(0, 15, 0, 40); Container.BackgroundTransparency = 1
             Instance.new("UIListLayout", Container).Padding = UDim.new(0, 10)
-            
             local GT = Instance.new("TextLabel", G); GT.Text = title:upper(); GT.Size = UDim2.new(1, -30, 0, 30); GT.Position = UDim2.new(0, 15, 0, 5); GT.Font = "GothamBold"; GT.TextColor3 = Theme.Muted; GT.TextSize = 10; GT.TextXAlignment = "Left"; GT.BackgroundTransparency = 1
 
             local E = {}
@@ -168,11 +138,10 @@ function Library:CreateWindow()
                 local L = Instance.new("TextLabel", F); L.Text = txt; L.Size = UDim2.new(1, 0, 1, 0); L.Font = "GothamMedium"; L.TextColor3 = Theme.Text; L.TextSize = 14; L.TextXAlignment = "Left"; L.BackgroundTransparency = 1
                 local Sw = Instance.new("TextButton", F); Sw.Size = UDim2.new(0, 36, 0, 18); Sw.Position = UDim2.new(1, 0, 0.5, 0); Sw.AnchorPoint = Vector2.new(1,0.5); Sw.BackgroundColor3 = Theme.Element; Sw.Text = ""; ApplyStyle(Sw, 10, true)
                 local D = Instance.new("Frame", Sw); D.Size = UDim2.new(0, 12, 0, 12); D.Position = UDim2.new(0, 3, 0.5, -6); D.BackgroundColor3 = Theme.Muted; ApplyStyle(D, 10)
-                
                 Sw.MouseButton1Click:Connect(function()
                     state = not state
-                    TweenService:Create(D, TweenInfo.new(0.25, Enum.EasingStyle.Back), {Position = state and UDim2.new(1, -15, 0.5, -6) or UDim2.new(0, 3, 0.5, -6), BackgroundColor3 = state and Theme.Text or Theme.Muted}):Play()
-                    TweenService:Create(Sw, TweenInfo.new(0.25), {BackgroundColor3 = state and Theme.Accent or Theme.Element}):Play()
+                    TweenService:Create(D, TweenInfo.new(0.2), {Position = state and UDim2.new(1, -15, 0.5, -6) or UDim2.new(0, 3, 0.5, -6)}):Play()
+                    TweenService:Create(Sw, TweenInfo.new(0.2), {BackgroundColor3 = state and Theme.Accent or Theme.Element}):Play()
                     if callback then callback(state) end
                 end)
             end
@@ -183,7 +152,6 @@ function Library:CreateWindow()
                 local V = Instance.new("TextLabel", F); V.Text = tostring(min)..suffix; V.Size = UDim2.new(0.4, 0, 0, 18); V.Position = UDim2.new(0.6,0,0,0); V.Font = "GothamMedium"; V.TextColor3 = Theme.Accent; V.TextSize = 13; V.TextXAlignment = "Right"; V.BackgroundTransparency = 1
                 local Bar = Instance.new("Frame", F); Bar.Size = UDim2.new(1, 0, 0, 4); Bar.Position = UDim2.new(0, 0, 0, 26); Bar.BackgroundColor3 = Theme.Element; ApplyStyle(Bar, 2)
                 local Fill = Instance.new("Frame", Bar); Fill.Size = UDim2.new(0, 0, 1, 0); Fill.BackgroundColor3 = Theme.Accent; ApplyStyle(Fill, 2)
-                
                 local function update(input)
                     local pos = math.clamp((input.Position.X - Bar.AbsolutePosition.X) / Bar.AbsoluteSize.X, 0, 1)
                     Fill.Size = UDim2.new(pos, 0, 1, 0)
@@ -199,22 +167,10 @@ function Library:CreateWindow()
                 end)
             end
 
-            function E:AddDropdown(txt, options, callback)
-                local F = Instance.new("Frame", Container); F.Size = UDim2.new(1, 0, 0, 24); F.BackgroundTransparency = 1
-                local L = Instance.new("TextLabel", F); L.Text = txt; L.Size = UDim2.new(0.5, 0, 1, 0); L.Font = "GothamMedium"; L.TextColor3 = Theme.Text; L.TextSize = 14; L.TextXAlignment = "Left"; L.BackgroundTransparency = 1
-                local Box = Instance.new("TextButton", F); Box.Size = UDim2.new(0.45, 0, 1, 0); Box.Position = UDim2.new(1, 0, 0, 0); Box.AnchorPoint = Vector2.new(1,0); Box.BackgroundColor3 = Theme.Element; Box.Text = " " .. options[1]; Box.Font = "GothamMedium"; Box.TextColor3 = Theme.Muted; Box.TextSize = 12; Box.TextXAlignment = "Left"; ApplyStyle(Box, 4, true)
-                Box.MouseButton1Click:Connect(function() if callback then callback() end end)
-            end
-
             return E
         end
 
-        -- Сетка для групп
-        local PageGrid = Instance.new("UIGridLayout", Page)
-        PageGrid.CellSize = UDim2.new(0.485, 0, 0, 350)
-        PageGrid.CellPadding = UDim2.new(0.02, 0, 0, 15)
-        Instance.new("UIPadding", Page).PaddingTop = UDim.new(0, 45) -- Место для под-вкладок
-
+        local PageGrid = Instance.new("UIGridLayout", Page); PageGrid.CellSize = UDim2.new(0.485, 0, 0, 300); PageGrid.CellPadding = UDim2.new(0.02, 0, 0, 15)
         return Tab
     end
     return Window
