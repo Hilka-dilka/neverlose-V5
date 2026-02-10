@@ -250,12 +250,18 @@ function Library:CreateWindow()
 end
 
 
-            function E:AddArrow(txt, callback)
-               local F = Instance.new("Frame", Container); F.Size = UDim2.new(1, 0, 0, 24); F.BackgroundTransparency = 1
-               local L = Instance.new("TextLabel", F); L.Text = txt; L.Size = UDim2.new(1, 0, 1, 0); L.Font = "GothamMedium"; L.TextColor3 = Theme.Text; L.TextSize = 14; L.TextXAlignment = "Left"; L.BackgroundTransparency = 1
-               local A = Instance.new("TextButton", F); A.Size = UDim2.new(0, 20, 1, 0); A.Position = UDim2.new(1, 0, 0, 0); A.AnchorPoint = Vector2.new(1,0); A.BackgroundTransparency = 1; A.Text = ">"; A.Font = "GothamBold"; A.TextColor3 = Theme.Muted; A.TextSize = 16
-               A.MouseButton1Click:Connect(function() if callback then callback() end end)
-            end
+            -- СТРЕЛКА С БОКОВЫМ ОКНОМ (Скриншот 74)
+                function E:AddArrow(txt)
+                    local F = Instance.new("Frame", container); F.Size = UDim2.new(1, 0, 0, 24); F.BackgroundTransparency = 1
+                    local L = Instance.new("TextLabel", F); L.Text = txt; L.Size = UDim2.new(1, 0, 1, 0); L.Font = "GothamMedium"; L.TextColor3 = Theme.Text; L.TextSize = 14; L.TextXAlignment = "Left"; L.BackgroundTransparency = 1
+                    local A = Instance.new("TextButton", F); A.Size = UDim2.new(0, 20, 1, 0); A.Position = UDim2.new(1, 0, 0, 0); A.AnchorPoint = Vector2.new(1,0); A.BackgroundTransparency = 1; A.Text = ">"; A.Font = "GothamBold"; A.TextColor3 = Theme.Muted; A.TextSize = 16
+                    
+                    local Sub, SubContainer = CreateSubWindow(txt)
+                    A.MouseButton1Click:Connect(function() 
+                        Sub.Visible = not Sub.Visible 
+                    end)
+                    return InternalElements(SubContainer) -- Позволяет добавлять элементы в боковое окно
+                end
 
             return E
         end
