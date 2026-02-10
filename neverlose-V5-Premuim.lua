@@ -47,12 +47,15 @@ end
 
 function Library:CreateWindow()
     local ScreenGui = Instance.new("ScreenGui", CoreGui)
-    ScreenGui.Name = "Neverlose_Premium_V5"
+    ScreenGui.Name = "Neverlose_Final_Premium"
     ScreenGui.IgnoreGuiInset = true
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
 
     local Overlay = Instance.new("Frame", ScreenGui)
-    Overlay.Size = UDim2.new(1, 0, 1, 0); Overlay.BackgroundTransparency = 1; Overlay.ZIndex = 10000
+    Overlay.Name = "Overlay"
+    Overlay.Size = UDim2.new(1, 0, 1, 0)
+    Overlay.BackgroundTransparency = 1
+    Overlay.ZIndex = 10000
 
     local Main = Instance.new("CanvasGroup", ScreenGui)
     Main.Size = UDim2.new(0, 880, 0, 620)
@@ -97,8 +100,6 @@ function Library:CreateWindow()
         Btn.Size = UDim2.new(1, -30, 0, 38); Btn.Position = UDim2.new(0, 15, 0, 0); Btn.BackgroundColor3 = Theme.Element; Btn.BackgroundTransparency = 1; Btn.Text = "          " .. tabName; Btn.Font = "GothamMedium"; Btn.TextColor3 = Theme.Muted; Btn.TextSize = 13; Btn.TextXAlignment = "Left"; Btn.AutoButtonColor = false; Btn.LayoutOrder = Library.LayoutOrderNum; ApplyStyle(Btn, 6)
 
         local Page = Instance.new("CanvasGroup", ContentArea); Page.Size = UDim2.new(1, 0, 1, 0); Page.Visible = false; Page.BackgroundTransparency = 1
-
-        -- Стандартный отступ для страницы
         local Pad = Instance.new("UIPadding", Page); Pad.PaddingTop = UDim.new(0, 10); Pad.PaddingLeft = UDim.new(0, 10); Pad.PaddingRight = UDim.new(0, 10)
 
         if isUnderDev then
@@ -117,16 +118,10 @@ function Library:CreateWindow()
 
         local TabFunctions = {}
 
-        -- ИСПРАВЛЕННЫЙ МЕТОД: КАРТИНКА (Меняет отступ только ЭТОЙ страницы)
         function TabFunctions:AddTopImage(id)
-            Pad.PaddingTop = UDim.new(0, 165) -- Увеличиваем отступ только здесь
+            Pad.PaddingTop = UDim.new(0, 170)
             local Img = Instance.new("ImageLabel", Page)
-            Img.Size = UDim2.new(0, 400, 0, 150)
-            Img.Position = UDim2.new(0.5, -200, 0, 5)
-            Img.BackgroundTransparency = 1
-            Img.Image = "rbxassetid://" .. id
-            Img.ScaleType = Enum.ScaleType.Fit
-            Img.ZIndex = 5
+            Img.Size = UDim2.new(0, 450, 0, 150); Img.Position = UDim2.new(0.5, -225, 0, 5); Img.BackgroundTransparency = 1; Img.Image = "rbxassetid://" .. id; Img.ScaleType = "Fit"; Img.ZIndex = 5
         end
 
         function TabFunctions:AddGroup(title)
@@ -135,9 +130,8 @@ function Library:CreateWindow()
             Instance.new("UIListLayout", Container).Padding = UDim.new(0, 10)
             local GT = Instance.new("TextLabel", G); GT.Text = title:upper(); GT.Size = UDim2.new(1, -30, 0, 30); GT.Position = UDim2.new(0, 15, 0, 5); GT.Font = "GothamBold"; GT.TextColor3 = Theme.Muted; GT.TextSize = 10; GT.TextXAlignment = "Left"; GT.BackgroundTransparency = 1
 
-            local ElementFunctions = {}
-
-            function ElementFunctions:AddToggle(txt, callback)
+            local E = {}
+            function E:AddToggle(txt, callback)
                 local state = false
                 local F = Instance.new("Frame", Container); F.Size = UDim2.new(1, 0, 0, 26); F.BackgroundTransparency = 1
                 local L = Instance.new("TextLabel", F); L.Text = txt; L.Size = UDim2.new(1, 0, 1, 0); L.Font = "GothamMedium"; L.TextColor3 = Theme.Text; L.TextSize = 14; L.TextXAlignment = "Left"; L.BackgroundTransparency = 1
@@ -151,13 +145,12 @@ function Library:CreateWindow()
                 end)
             end
 
-            function ElementFunctions:AddSlider(txt, min, max, suffix, callback)
+            function E:AddSlider(txt, min, max, suffix, callback)
                 local F = Instance.new("Frame", Container); F.Size = UDim2.new(1, 0, 0, 35); F.BackgroundTransparency = 1
                 local L = Instance.new("TextLabel", F); L.Text = txt; L.Size = UDim2.new(0.6, 0, 0, 18); L.Font = "GothamMedium"; L.TextColor3 = Theme.Text; L.TextSize = 14; L.TextXAlignment = "Left"; L.BackgroundTransparency = 1
                 local V = Instance.new("TextLabel", F); V.Text = tostring(min)..suffix; V.Size = UDim2.new(0.4, 0, 0, 18); V.Position = UDim2.new(0.6,0,0,0); V.Font = "GothamMedium"; V.TextColor3 = Theme.Accent; V.TextSize = 13; V.TextXAlignment = "Right"; V.BackgroundTransparency = 1
                 local Bar = Instance.new("Frame", F); Bar.Size = UDim2.new(1, 0, 0, 4); Bar.Position = UDim2.new(0, 0, 0, 26); Bar.BackgroundColor3 = Theme.Element; ApplyStyle(Bar, 2)
                 local Fill = Instance.new("Frame", Bar); Fill.Size = UDim2.new(0, 0, 1, 0); Fill.BackgroundColor3 = Theme.Accent; ApplyStyle(Fill, 2)
-                
                 local function update(input)
                     local pos = math.clamp((input.Position.X - Bar.AbsolutePosition.X) / Bar.AbsoluteSize.X, 0, 1)
                     Fill.Size = UDim2.new(pos, 0, 1, 0)
@@ -173,39 +166,43 @@ function Library:CreateWindow()
                 end)
             end
 
-            function ElementFunctions:AddDropdown(txt, options, callback)
+            function E:AddDropdown(txt, options, callback)
                 local F = Instance.new("Frame", Container); F.Size = UDim2.new(1, 0, 0, 24); F.BackgroundTransparency = 1
                 local L = Instance.new("TextLabel", F); L.Text = txt; L.Size = UDim2.new(0.5, 0, 1, 0); L.Font = "GothamMedium"; L.TextColor3 = Theme.Text; L.TextSize = 14; L.TextXAlignment = "Left"; L.BackgroundTransparency = 1
-                local Box = Instance.new("TextButton", F); Box.Size = UDim2.new(0.45, 0, 1, 0); Box.Position = UDim2.new(1, 0, 0, 0); Box.AnchorPoint = Vector2.new(1,0); Box.BackgroundColor3 = Theme.Element; Box.Text = ""; ApplyStyle(Box, 4, true)
-                local ValLabel = Instance.new("TextLabel", Box); ValLabel.Size = UDim2.new(1,-10,1,0); ValLabel.Position = UDim2.new(0,5,0,0); ValLabel.Text = options[1] or ""; ValLabel.Font = "GothamMedium"; ValLabel.TextColor3 = Theme.Text; ValLabel.TextSize = 12; ValLabel.TextXAlignment = "Left"; ValLabel.BackgroundTransparency = 1
+                
+                local Box = Instance.new("TextButton", F)
+                Box.Size = UDim2.new(0.45, 0, 1, 0); Box.Position = UDim2.new(1, 0, 0, 0); Box.AnchorPoint = Vector2.new(1,0); Box.BackgroundColor3 = Theme.Element; Box.Text = ""; ApplyStyle(Box, 4, true)
+                
+                -- ТЕКСТ В ДРОПДАУНЕ (ЯВНО БЕЛЫЙ)
+                local ValTxt = Instance.new("TextLabel", Box)
+                ValTxt.Size = UDim2.new(1, -10, 1, 0); ValTxt.Position = UDim2.new(0, 5, 0, 0); ValTxt.BackgroundTransparency = 1; ValTxt.Text = options[1] or ""; ValTxt.Font = "GothamMedium"; ValTxt.TextColor3 = Color3.new(1,1,1); ValTxt.TextSize = 12; ValTxt.TextXAlignment = "Left"; ValTxt.ZIndex = 100
                 
                 Box.MouseButton1Click:Connect(function()
                     if Overlay:FindFirstChild("DropMenu") then Overlay.DropMenu:Destroy() return end
                     local DropMenu = Instance.new("ScrollingFrame", Overlay)
-                    DropMenu.Name = "DropMenu"; DropMenu.Size = UDim2.new(0, Box.AbsoluteSize.X, 0, math.min(#options * 28 + 8, 200)); DropMenu.Position = UDim2.new(0, Box.AbsolutePosition.X, 0, Box.AbsolutePosition.Y + Box.AbsoluteSize.Y + 2); DropMenu.BackgroundColor3 = Theme.Element; DropMenu.ScrollBarThickness = 0; DropMenu.ZIndex = 10001; ApplyStyle(DropMenu, 6, true)
+                    DropMenu.Name = "DropMenu"; DropMenu.Size = UDim2.new(0, Box.AbsoluteSize.X, 0, math.min(#options * 28 + 8, 250)); DropMenu.Position = UDim2.new(0, Box.AbsolutePosition.X, 0, Box.AbsolutePosition.Y + Box.AbsoluteSize.Y + 2); DropMenu.BackgroundColor3 = Theme.Element; DropMenu.ScrollBarThickness = 0; DropMenu.ZIndex = 20000; ApplyStyle(DropMenu, 6, true)
                     Instance.new("UIListLayout", DropMenu)
                     for _, opt in pairs(options) do
                         local oBtn = Instance.new("TextButton", DropMenu)
-                        oBtn.Size = UDim2.new(1,0,0,28); oBtn.BackgroundColor3 = Theme.Element; oBtn.Text = "  "..opt; oBtn.Font = "GothamMedium"; oBtn.TextColor3 = Theme.Muted; oBtn.TextSize = 13; oBtn.TextXAlignment = "Left"; oBtn.BorderSizePixel = 0
-                        oBtn.MouseEnter:Connect(function() TweenService:Create(oBtn, TweenInfo.new(0.2), {BackgroundColor3 = Theme.Hover, TextColor3 = Theme.Text}):Play() end)
-                        oBtn.MouseLeave:Connect(function() TweenService:Create(oBtn, TweenInfo.new(0.2), {BackgroundColor3 = Theme.Element, TextColor3 = Theme.Muted}):Play() end)
-                        oBtn.MouseButton1Click:Connect(function() ValLabel.Text = opt; DropMenu:Destroy(); if callback then callback(opt) end end)
+                        oBtn.Size = UDim2.new(1,0,0,28); oBtn.BackgroundColor3 = Theme.Element; oBtn.Text = "  "..opt; oBtn.Font = "GothamMedium"; oBtn.TextColor3 = Theme.Text; oBtn.TextSize = 13; oBtn.TextXAlignment = "Left"; oBtn.BorderSizePixel = 0
+                        oBtn.MouseEnter:Connect(function() TweenService:Create(oBtn, TweenInfo.new(0.2), {BackgroundColor3 = Theme.Hover}):Play() end)
+                        oBtn.MouseLeave:Connect(function() TweenService:Create(oBtn, TweenInfo.new(0.2), {BackgroundColor3 = Theme.Element}):Play() end)
+                        oBtn.MouseButton1Click:Connect(function() ValTxt.Text = opt; DropMenu:Destroy(); if callback then callback(opt) end end)
                     end
                 end)
             end
 
-            function ElementFunctions:AddArrow(txt, callback)
+            function E:AddArrow(txt, callback)
                local F = Instance.new("Frame", Container); F.Size = UDim2.new(1, 0, 0, 24); F.BackgroundTransparency = 1
                local L = Instance.new("TextLabel", F); L.Text = txt; L.Size = UDim2.new(1, 0, 1, 0); L.Font = "GothamMedium"; L.TextColor3 = Theme.Text; L.TextSize = 14; L.TextXAlignment = "Left"; L.BackgroundTransparency = 1
                local A = Instance.new("TextButton", F); A.Size = UDim2.new(0, 20, 1, 0); A.Position = UDim2.new(1, 0, 0, 0); A.AnchorPoint = Vector2.new(1,0); A.BackgroundTransparency = 1; A.Text = ">"; A.Font = "GothamBold"; A.TextColor3 = Theme.Muted; A.TextSize = 16
                A.MouseButton1Click:Connect(function() if callback then callback() end end)
             end
 
-            return ElementFunctions
+            return E
         end
 
         local PageGrid = Instance.new("UIGridLayout", Page); PageGrid.CellSize = UDim2.new(0.485, 0, 0, 320); PageGrid.CellPadding = UDim2.new(0.02, 0, 0, 15)
-        
         return TabFunctions
     end
     return WindowFunctions
