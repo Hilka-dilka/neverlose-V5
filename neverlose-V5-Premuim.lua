@@ -88,6 +88,27 @@ function Library:CreateWindow()
     local Tabs = {}
     local WindowFunctions = {}
 
+-- Функция для создания бокового окна (Скриншот 74)
+    local function CreateSubWindow(name)
+        local Sub = Instance.new("Frame", Main)
+        Sub.Size = UDim2.new(0, 250, 0, 350)
+        Sub.Position = UDim2.new(1, 15, 0, 0) -- Справа от основного меню
+        Sub.BackgroundColor3 = Theme.Group
+        Sub.Visible = false
+        ApplyStyle(Sub, 8, true)
+
+        local Header = Instance.new("TextLabel", Sub)
+        Header.Text = name; Header.Size = UDim2.new(1, -20, 0, 40); Header.Position = UDim2.new(0, 15, 0, 0)
+        Header.Font = "GothamBold"; Header.TextColor3 = Theme.Text; Header.TextSize = 14; Header.TextXAlignment = "Left"; Header.BackgroundTransparency = 1
+
+        local Container = Instance.new("Frame", Sub)
+        Container.Size = UDim2.new(1, -20, 1, -50); Container.Position = UDim2.new(0, 10, 0, 40); Container.BackgroundTransparency = 1
+        Instance.new("UIListLayout", Container).Padding = UDim.new(0, 10)
+
+        return Sub, Container
+    end
+
+    
     function WindowFunctions:AddCategory(name)
         Library.LayoutOrderNum = Library.LayoutOrderNum + 1
         local L = Instance.new("TextLabel", TabScroll)
