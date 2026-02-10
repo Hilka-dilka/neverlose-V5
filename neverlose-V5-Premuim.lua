@@ -90,35 +90,68 @@ function Library:CreateWindow()
 
     -- Функция для создания бокового окна (Скриншот 74) - исправленная
     local function CreateSubWindow(name)
-        local Sub = Instance.new("Frame", Main)
-        Sub.Size = UDim2.new(0, 300, 0, 400)
-        Sub.Position = UDim2.new(1, 15, 0, 50)
-        Sub.BackgroundColor3 = Theme.Group
+    local Sub = Instance.new("Frame", ScreenGui) -- РОДИТЕЛЬ ScreenGui, а не Main
+    Sub.Name = "SubWindow_" .. name
+    Sub.Size = UDim2.new(0, 300, 0, 400)
+    Sub.Position = UDim2.new(1, -320, 0.5, -200) -- Позиционируем справа от основного окна
+    Sub.BackgroundColor3 = Theme.Group
+    Sub.Visible = false
+    Sub.ZIndex = 2000 -- Высокий ZIndex чтобы было поверх всего
+    Sub.BorderSizePixel = 0
+    ApplyStyle(Sub, 8, true)
+    
+    -- Заголовок
+    local Header = Instance.new("Frame", Sub)
+    Header.Size = UDim2.new(1, 0, 0, 40)
+    Header.BackgroundColor3 = Theme.Element
+    Header.BorderSizePixel = 0
+    
+    local HeaderCorner = Instance.new("UICorner", Header)
+    HeaderCorner.CornerRadius = UDim.new(0, 8)
+    
+    local Title = Instance.new("TextLabel", Header)
+    Title.Text = name
+    Title.Size = UDim2.new(1, -20, 1, 0)
+    Title.Position = UDim2.new(0, 15, 0, 0)
+    Title.Font = "GothamBold"
+    Title.TextColor3 = Theme.Text
+    Title.TextSize = 14
+    Title.TextXAlignment = "Left"
+    Title.BackgroundTransparency = 1
+    
+    -- Кнопка закрытия
+    local CloseBtn = Instance.new("TextButton", Header)
+    CloseBtn.Size = UDim2.new(0, 20, 0, 20)
+    CloseBtn.Position = UDim2.new(1, -25, 0.5, -10)
+    CloseBtn.AnchorPoint = Vector2.new(1, 0.5)
+    CloseBtn.BackgroundTransparency = 1
+    CloseBtn.Text = "✕"
+    CloseBtn.Font = "GothamBold"
+    CloseBtn.TextColor3 = Theme.Muted
+    CloseBtn.TextSize = 16
+    
+    CloseBtn.MouseButton1Click:Connect(function()
         Sub.Visible = false
-        Sub.ZIndex = 1000
-        ApplyStyle(Sub, 8, true)
-
-        local Header = Instance.new("TextLabel", Sub)
-        Header.Text = name
-        Header.Size = UDim2.new(1, -20, 0, 40)
-        Header.Position = UDim2.new(0, 15, 0, 0)
-        Header.Font = "GothamBold"
-        Header.TextColor3 = Theme.Text
-        Header.TextSize = 14
-        Header.TextXAlignment = "Left"
-        Header.BackgroundTransparency = 1
-
-        local Container = Instance.new("ScrollingFrame", Sub)
-        Container.Size = UDim2.new(1, -20, 1, -50)
-        Container.Position = UDim2.new(0, 10, 0, 40)
-        Container.BackgroundTransparency = 1
-        Container.ScrollBarThickness = 4
-        Container.ScrollBarImageColor3 = Theme.Muted
-        local Layout = Instance.new("UIListLayout", Container)
-        Layout.Padding = UDim.new(0, 10)
-
-        return Sub, Container
-    end
+    end)
+    
+    -- Контейнер для элементов
+    local Container = Instance.new("ScrollingFrame", Sub)
+    Container.Size = UDim2.new(1, -20, 1, -60)
+    Container.Position = UDim2.new(0, 10, 0, 50)
+    Container.BackgroundTransparency = 1
+    Container.ScrollBarThickness = 4
+    Container.ScrollBarImageColor3 = Theme.Muted
+    Container.BorderSizePixel = 0
+    
+    local Layout = Instance.new("UIListLayout", Container)
+    Layout.Padding = UDim.new(0, 10)
+    Layout.SortOrder = Enum.SortOrder.LayoutOrder
+    
+    -- Делаем окно перетаскиваемым
+    MakeDraggable(Sub, Header)
+    
+    return Sub, Container
+end
 
     -- Функция для создания элементов внутри бокового окна
     local function CreateInternalElements(container)
@@ -604,37 +637,63 @@ function Library:CreateWindow()
 
             -- СТРЕЛКА С БОКОВЫМ ОКНОМ (исправленная)
             function E:AddArrow(txt)
-                local F = Instance.new("Frame", Container)
-                F.Size = UDim2.new(1, 0, 0, 24)
-                F.BackgroundTransparency = 1
-                
-                local L = Instance.new("TextLabel", F)
-                L.Text = txt
-                L.Size = UDim2.new(1, 0, 1, 0)
-                L.Font = "GothamMedium"
-                L.TextColor3 = Theme.Text
-                L.TextSize = 14
-                L.TextXAlignment = "Left"
-                L.BackgroundTransparency = 1
-                
-                local A = Instance.new("TextButton", F)
-                A.Size = UDim2.new(0, 20, 1, 0)
-                A.Position = UDim2.new(1, 0, 0, 0)
-                A.AnchorPoint = Vector2.new(1,0)
-                A.BackgroundTransparency = 1
+    local F = Instance.new("Frame", Container)
+    F.Size = UDim2.new(1, 0, 0, 28)
+    F.BackgroundTransparency = 1
+    
+    local L = Instance.new("TextLabel", F)
+    L.Text = txt
+    L.Size = UDim2.new(1, -30, 1, 0)
+    L.Font = "GothamMedium"
+    L.TextColor3 = Theme.Text
+    L.TextSize = 14
+    L.TextXAlignment = "Left"
+    L.BackgroundTransparency = 1
+    
+    local A = Instance.new("TextButton", F)
+    A.Size = UDim2.new(0, 24, 0, 24)
+    A.Position = UDim2.new(1, -5, 0.5, -12)
+    A.AnchorPoint = Vector2.new(1, 0.5)
+    A.BackgroundColor3 = Theme.Element
+    A.Text = ">"
+    A.Font = "GothamBold"
+    A.TextColor3 = Theme.Muted
+    A.TextSize = 14
+    ApplyStyle(A, 4)
+    
+    local Sub, SubContainer = CreateSubWindow(txt)
+    
+    A.MouseButton1Click:Connect(function() 
+        Sub.Visible = not Sub.Visible 
+        if Sub.Visible then
+            A.Text = "‹" -- Меняем стрелку когда открыто
+        else
+            A.Text = ">"
+        end
+    end)
+    
+    -- Возвращаем функции для добавления элементов в боковое окно
+    local subElements = CreateInternalElements(SubContainer)
+    
+    -- Добавляем автоматическое закрытие при клике вне окна
+    local function closeOnClickOutside(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 and Sub.Visible then
+            local mousePos = input.Position
+            local subPos = Sub.AbsolutePosition
+            local subSize = Sub.AbsoluteSize
+            
+            if mousePos.X < subPos.X or mousePos.X > subPos.X + subSize.X or
+               mousePos.Y < subPos.Y or mousePos.Y > subPos.Y + subSize.Y then
+                Sub.Visible = false
                 A.Text = ">"
-                A.Font = "GothamBold"
-                A.TextColor3 = Theme.Muted
-                A.TextSize = 16
-                
-                local Sub, SubContainer = CreateSubWindow(txt)
-                
-                A.MouseButton1Click:Connect(function() 
-                    Sub.Visible = not Sub.Visible 
-                end)
-                
-                return CreateInternalElements(SubContainer) -- Исправлено
             end
+        end
+    end
+    
+    UserInputService.InputBegan:Connect(closeOnClickOutside)
+    
+    return subElements
+end
 
             return E
         end
