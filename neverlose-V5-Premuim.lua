@@ -167,30 +167,88 @@ function Library:CreateWindow()
             end
 
             function E:AddDropdown(txt, options, callback)
-                local F = Instance.new("Frame", Container); F.Size = UDim2.new(1, 0, 0, 24); F.BackgroundTransparency = 1
-                local L = Instance.new("TextLabel", F); L.Text = txt; L.Size = UDim2.new(0.5, 0, 1, 0); L.Font = "GothamMedium"; L.TextColor3 = Theme.Text; L.TextSize = 14; L.TextXAlignment = "Left"; L.BackgroundTransparency = 1
-                
-                local Box = Instance.new("TextButton", F)
-                Box.Size = UDim2.new(0.45, 0, 1, 0); Box.Position = UDim2.new(1, 0, 0, 0); Box.AnchorPoint = Vector2.new(1,0); Box.BackgroundColor3 = Theme.Element; Box.Text = ""; ApplyStyle(Box, 4, true)
-                
-                -- ТЕКСТ В ДРОПДАУНЕ (ЯВНО БЕЛЫЙ)
-                local ValTxt = Instance.new("TextLabel", Box)
-                ValTxt.Size = UDim2.new(1, -10, 1, 0); ValTxt.Position = UDim2.new(0, 5, 0, 0); ValTxt.BackgroundTransparency = 1; ValTxt.Text = options[1] or ""; ValTxt.Font = "GothamMedium"; ValTxt.TextColor3 = Color3.new(1,1,1); ValTxt.TextSize = 12; ValTxt.TextXAlignment = "Left"; ValTxt.ZIndex = 100
-                
-                Box.MouseButton1Click:Connect(function()
-                    if Overlay:FindFirstChild("DropMenu") then Overlay.DropMenu:Destroy() return end
-                    local DropMenu = Instance.new("ScrollingFrame", Overlay)
-                    DropMenu.Name = "DropMenu"; DropMenu.Size = UDim2.new(0, Box.AbsoluteSize.X, 0, math.min(#options * 28 + 8, 250)); DropMenu.Position = UDim2.new(0, Box.AbsolutePosition.X, 0, Box.AbsolutePosition.Y + Box.AbsoluteSize.Y + 2); DropMenu.BackgroundColor3 = Theme.Element; DropMenu.ScrollBarThickness = 0; DropMenu.ZIndex = 20000; ApplyStyle(DropMenu, 6, true)
-                    Instance.new("UIListLayout", DropMenu)
-                    for _, opt in pairs(options) do
-                        local oBtn = Instance.new("TextButton", DropMenu)
-                        oBtn.Size = UDim2.new(1,0,0,28); oBtn.BackgroundColor3 = Theme.Element; oBtn.Text = "  "..opt; oBtn.Font = "GothamMedium"; oBtn.TextColor3 = Theme.Text; oBtn.TextSize = 13; oBtn.TextXAlignment = "Left"; oBtn.BorderSizePixel = 0
-                        oBtn.MouseEnter:Connect(function() TweenService:Create(oBtn, TweenInfo.new(0.2), {BackgroundColor3 = Theme.Hover}):Play() end)
-                        oBtn.MouseLeave:Connect(function() TweenService:Create(oBtn, TweenInfo.new(0.2), {BackgroundColor3 = Theme.Element}):Play() end)
-                        oBtn.MouseButton1Click:Connect(function() ValTxt.Text = opt; DropMenu:Destroy(); if callback then callback(opt) end end)
-                    end
-                end)
-            end
+    local F = Instance.new("Frame", Container)
+    F.Size = UDim2.new(1, 0, 0, 24)
+    F.BackgroundTransparency = 1
+
+    local L = Instance.new("TextLabel", F)
+    L.Text = txt
+    L.Size = UDim2.new(0.5, 0, 1, 0)
+    L.Font = Enum.Font.GothamMedium
+    L.TextColor3 = Theme.Text
+    L.TextSize = 14
+    L.TextXAlignment = Enum.TextXAlignment.Left
+    L.BackgroundTransparency = 1
+
+    local Box = Instance.new("TextButton", F)
+    Box.Size = UDim2.new(0.45, 0, 1, 0)
+    Box.Position = UDim2.new(1, 0, 0, 0)
+    Box.AnchorPoint = Vector2.new(1,0)
+    Box.BackgroundColor3 = Theme.Element
+    Box.Text = ""
+    ApplyStyle(Box, 4, true)
+    Box.ClipsDescendants = false
+    Box.ZIndex = 1
+
+    -- Текст выбранного значения
+    local ValTxt = Instance.new("TextLabel", Box)
+    ValTxt.Size = UDim2.new(1, -10, 1, 0)
+    ValTxt.Position = UDim2.new(0, 5, 0, 0)
+    ValTxt.BackgroundTransparency = 1
+    ValTxt.Text = options[1] or ""
+    ValTxt.Font = Enum.Font.GothamMedium
+    ValTxt.TextColor3 = Color3.fromRGB(255,255,255)
+    ValTxt.TextSize = 12
+    ValTxt.TextXAlignment = Enum.TextXAlignment.Left
+    ValTxt.ZIndex = 2
+
+    Box.MouseButton1Click:Connect(function()
+        -- Убираем старое меню, если есть
+        if Overlay:FindFirstChild("DropMenu") then
+            Overlay.DropMenu:Destroy()
+            return
+        end
+
+        local DropMenu = Instance.new("ScrollingFrame", Overlay)
+        DropMenu.Name = "DropMenu"
+        DropMenu.Size = UDim2.new(0, Box.AbsoluteSize.X, 0, math.min(#options * 28 + 8, 250))
+        DropMenu.Position = UDim2.new(0, Box.AbsolutePosition.X, 0, Box.AbsolutePosition.Y + Box.AbsoluteSize.Y + 2)
+        DropMenu.BackgroundColor3 = Theme.Element
+        DropMenu.ScrollBarThickness = 0
+        DropMenu.ZIndex = 100
+        DropMenu.ClipsDescendants = false
+        ApplyStyle(DropMenu, 6, true)
+        local Layout = Instance.new("UIListLayout", DropMenu)
+        Layout.SortOrder = Enum.SortOrder.LayoutOrder
+        Layout.Padding = UDim.new(0,2)
+
+        for i, opt in pairs(options) do
+            local oBtn = Instance.new("TextButton", DropMenu)
+            oBtn.Size = UDim2.new(1,0,0,28)
+            oBtn.BackgroundColor3 = Theme.Element
+            oBtn.Text = "  "..opt
+            oBtn.Font = Enum.Font.GothamMedium
+            oBtn.TextColor3 = Theme.Text
+            oBtn.TextSize = 13
+            oBtn.TextXAlignment = "Left"
+            oBtn.BorderSizePixel = 0
+            oBtn.ZIndex = 101
+
+            oBtn.MouseEnter:Connect(function()
+                TweenService:Create(oBtn, TweenInfo.new(0.2), {BackgroundColor3 = Theme.Hover}):Play()
+            end)
+            oBtn.MouseLeave:Connect(function()
+                TweenService:Create(oBtn, TweenInfo.new(0.2), {BackgroundColor3 = Theme.Element}):Play()
+            end)
+            oBtn.MouseButton1Click:Connect(function()
+                ValTxt.Text = opt
+                DropMenu:Destroy()
+                if callback then callback(opt) end
+            end)
+        end
+    end)
+end
+
 
             function E:AddArrow(txt, callback)
                local F = Instance.new("Frame", Container); F.Size = UDim2.new(1, 0, 0, 24); F.BackgroundTransparency = 1
