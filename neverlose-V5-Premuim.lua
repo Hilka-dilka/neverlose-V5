@@ -131,7 +131,7 @@ function Library:CreateWindow()
         end)
 
         table.insert(Tabs, {Btn = Btn, Page = Page})
-        if #Tabs == 1 then Btn.MouseButton1Click:Fire() end
+        if Tabs == 1 then Btn.MouseButton1Click:Fire() end
 
         local Tab = {}
 
