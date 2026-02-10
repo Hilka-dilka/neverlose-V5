@@ -67,8 +67,6 @@ function Library:CreateWindow()
     Sidebar.Size = UDim2.new(0, 200, 1, 0)
     Sidebar.BackgroundColor3 = Theme.Sidebar
     ApplyStyle(Sidebar, 10)
-    
-    -- Двигаем ТОЛЬКО за сайдбар
     MakeDraggable(Main, Sidebar)
 
     local Logo = Instance.new("Frame", Sidebar)
@@ -98,18 +96,6 @@ function Library:CreateWindow()
         local Btn = Instance.new("TextButton", TabScroll)
         Btn.Size = UDim2.new(1, -30, 0, 38); Btn.Position = UDim2.new(0, 15, 0, 0); Btn.BackgroundColor3 = Theme.Element; Btn.BackgroundTransparency = 1; Btn.Text = "          " .. tabName; Btn.Font = "GothamMedium"; Btn.TextColor3 = Theme.Muted; Btn.TextSize = 13; Btn.TextXAlignment = "Left"; Btn.AutoButtonColor = false; Btn.LayoutOrder = Library.LayoutOrderNum; ApplyStyle(Btn, 6)
 
-        -- Подсветка вкладок при наведении
-        Btn.MouseEnter:Connect(function()
-            if Page and not Page.Visible then
-                TweenService:Create(Btn, TweenInfo.new(0.2), {BackgroundTransparency = 0.8}):Play()
-            end
-        end)
-        Btn.MouseLeave:Connect(function()
-            if Page and not Page.Visible then
-                TweenService:Create(Btn, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play()
-            end
-        end)
-
         local Page = Instance.new("CanvasGroup", ContentArea); Page.Size = UDim2.new(1, 0, 1, 0); Page.Visible = false; Page.BackgroundTransparency = 1
 
         if isUnderDev then
@@ -128,28 +114,19 @@ function Library:CreateWindow()
 
         local TabFunctions = {}
 
-        -- ИСПРАВЛЕННЫЙ МЕТОД ПОД-ВКЛАДОК
         function TabFunctions:AddSubTabs(names)
             local SubTabHolder = Instance.new("Frame", Page)
             SubTabHolder.Size = UDim2.new(0, 420, 0, 35); SubTabHolder.Position = UDim2.new(0.5, -210, 0, 5); SubTabHolder.BackgroundColor3 = Theme.Sidebar; ApplyStyle(SubTabHolder, 6, true); SubTabHolder.ZIndex = 5
             local List = Instance.new("UIListLayout", SubTabHolder); List.FillDirection = "Horizontal"; List.HorizontalAlignment = "Center"; List.Padding = UDim.new(0, 5)
             
-            for _, sName in pairs(names) do
+            for i, sName in pairs(names) do
                 local sBtn = Instance.new("TextButton", SubTabHolder)
-                sBtn.Size = UDim2.new(0, 90, 1, 0); sBtn.BackgroundTransparency = 1; sBtn.Text = sName; sBtn.Font = "GothamBold"; sBtn.TextColor3 = Theme.Muted; sBtn.TextSize = 12
+                sBtn.Size = UDim2.new(0, 90, 1, 0); sBtn.BackgroundTransparency = 1; sBtn.Text = sName; sBtn.Font = "GothamBold"; sBtn.TextColor3 = (i == 1 and Theme.Accent or Theme.Muted); sBtn.TextSize = 12
                 sBtn.MouseButton1Click:Connect(function()
-                   for _, b in pairs(SubTabHolder:GetChildren()) do 
-                       if b:IsA("TextButton") then b.TextColor3 = Theme.Muted end 
-                   end
+                   for _, b in pairs(SubTabHolder:GetChildren()) do if b:IsA("TextButton") then b.TextColor3 = Theme.Muted end end
                    sBtn.TextColor3 = Theme.Accent
                 end)
             end
-            -- По умолчанию первая активна
-            task.defer(function()
-                for _, b in pairs(SubTabHolder:GetChildren()) do
-                    if b:IsA("TextButton") then b.TextColor3 = Theme.Accent break end
-                end
-            end)
         end
 
         function TabFunctions:AddGroup(title)
@@ -164,7 +141,7 @@ function Library:CreateWindow()
                 local state = false
                 local F = Instance.new("Frame", Container); F.Size = UDim2.new(1, 0, 0, 26); F.BackgroundTransparency = 1
                 local L = Instance.new("TextLabel", F); L.Text = txt; L.Size = UDim2.new(1, 0, 1, 0); L.Font = "GothamMedium"; L.TextColor3 = Theme.Text; L.TextSize = 14; L.TextXAlignment = "Left"; L.BackgroundTransparency = 1
-                local Sw = Instance.new("TextButton", F); Sw.Size = UDim2.new(0, 38, 0, 18); Sw.Position = UDim2.new(1, 0, 0.5, 0); Sw.AnchorPoint = Vector2.new(1,0.5); Sw.BackgroundColor3 = Theme.Element; Sw.Text = ""; ApplyStyle(Sw, 10, true)
+                local Sw = Instance.new("TextButton", F); Sw.Size = UDim2.new(0, 36, 0, 18); Sw.Position = UDim2.new(1, 0, 0.5, 0); Sw.AnchorPoint = Vector2.new(1,0.5); Sw.BackgroundColor3 = Theme.Element; Sw.Text = ""; ApplyStyle(Sw, 10, true)
                 local D = Instance.new("Frame", Sw); D.Size = UDim2.new(0, 12, 0, 12); D.Position = UDim2.new(0, 3, 0.5, -6); D.BackgroundColor3 = Theme.Muted; ApplyStyle(D, 10)
                 Sw.MouseButton1Click:Connect(function()
                     state = not state
@@ -196,22 +173,29 @@ function Library:CreateWindow()
                 end)
             end
 
+            -- ИСПРАВЛЕННЫЙ ДРОПДАУН (ТЕКСТ ТЕПЕРЬ ВИДЕН)
             function ElementFunctions:AddDropdown(txt, options, callback)
                 local F = Instance.new("Frame", Container); F.Size = UDim2.new(1, 0, 0, 24); F.BackgroundTransparency = 1
                 local L = Instance.new("TextLabel", F); L.Text = txt; L.Size = UDim2.new(0.5, 0, 1, 0); L.Font = "GothamMedium"; L.TextColor3 = Theme.Text; L.TextSize = 14; L.TextXAlignment = "Left"; L.BackgroundTransparency = 1
-                local Box = Instance.new("TextButton", F); Box.Size = UDim2.new(0.45, 0, 1, 0); Box.Position = UDim2.new(1, 0, 0, 0); Box.AnchorPoint = Vector2.new(1,0); Box.BackgroundColor3 = Theme.Element; Box.Text = " " .. (options[1] or ""); Box.Font = "GothamMedium"; Box.TextColor3 = Theme.Text; Box.TextSize = 12; Box.TextXAlignment = "Left"; ApplyStyle(Box, 4, true)
+                
+                local Box = Instance.new("TextButton", F)
+                Box.Size = UDim2.new(0.45, 0, 1, 0); Box.Position = UDim2.new(1, 0, 0, 0); Box.AnchorPoint = Vector2.new(1,0); Box.BackgroundColor3 = Theme.Element; Box.Text = ""; ApplyStyle(Box, 4, true)
+                
+                local ValueLabel = Instance.new("TextLabel", Box)
+                ValueLabel.Size = UDim2.new(1, -10, 1, 0); ValueLabel.Position = UDim2.new(0, 5, 0, 0); ValueLabel.Text = options[1] or ""; ValueLabel.Font = "GothamMedium"; ValueLabel.TextColor3 = Theme.Text; ValueLabel.TextSize = 12; ValueLabel.TextXAlignment = "Left"; ValueLabel.BackgroundTransparency = 1
                 
                 Box.MouseButton1Click:Connect(function()
                     if Overlay:FindFirstChild("DropMenu") then Overlay.DropMenu:Destroy() return end
                     local DropMenu = Instance.new("ScrollingFrame", Overlay)
-                    DropMenu.Name = "DropMenu"; DropMenu.Size = UDim2.new(0, Box.AbsoluteSize.X, 0, math.min(#options * 28 + 8, 200)); DropMenu.Position = UDim2.new(0, Box.AbsolutePosition.X, 0, Box.AbsolutePosition.Y + Box.AbsoluteSize.Y + 2); DropMenu.BackgroundColor3 = Theme.Element; DropMenu.ScrollBarThickness = 0; DropMenu.ZIndex = 10000; ApplyStyle(DropMenu, 6, true)
-                    local List = Instance.new("UIListLayout", DropMenu)
+                    DropMenu.Name = "DropMenu"; DropMenu.Size = UDim2.new(0, Box.AbsoluteSize.X, 0, math.min(#options * 28 + 8, 200)); DropMenu.Position = UDim2.new(0, Box.AbsolutePosition.X, 0, Box.AbsolutePosition.Y + Box.AbsoluteSize.Y + 2); DropMenu.BackgroundColor3 = Theme.Element; DropMenu.ScrollBarThickness = 0; DropMenu.ZIndex = 10001; ApplyStyle(DropMenu, 6, true)
+                    local List = Instance.new("UIListLayout", DropMenu); List.Padding = UDim.new(0, 0)
+                    
                     for _, opt in pairs(options) do
                         local oBtn = Instance.new("TextButton", DropMenu)
-                        oBtn.Size = UDim2.new(1,0,0,28); oBtn.BackgroundColor3 = Theme.Element; oBtn.Text = "  "..opt; oBtn.Font = "GothamMedium"; oBtn.TextColor3 = Theme.Muted; oBtn.TextSize = 13; oBtn.TextXAlignment = "Left"; oBtn.BorderSizePixel = 0
+                        oBtn.Size = UDim2.new(1,0,0,28); oBtn.BackgroundColor3 = Theme.Element; oBtn.Text = "  "..opt; oBtn.Font = "GothamMedium"; oBtn.TextColor3 = Theme.Muted; oBtn.TextSize = 13; oBtn.TextXAlignment = "Left"; oBtn.BorderSizePixel = 0; oBtn.ZIndex = 10002
                         oBtn.MouseEnter:Connect(function() TweenService:Create(oBtn, TweenInfo.new(0.2), {BackgroundColor3 = Theme.Hover, TextColor3 = Theme.Text}):Play() end)
                         oBtn.MouseLeave:Connect(function() TweenService:Create(oBtn, TweenInfo.new(0.2), {BackgroundColor3 = Theme.Element, TextColor3 = Theme.Muted}):Play() end)
-                        oBtn.MouseButton1Click:Connect(function() Box.Text = "  "..opt; DropMenu:Destroy(); if callback then callback(opt) end end)
+                        oBtn.MouseButton1Click:Connect(function() ValueLabel.Text = opt; DropMenu:Destroy(); if callback then callback(opt) end end)
                     end
                 end)
             end
