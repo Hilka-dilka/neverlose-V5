@@ -130,8 +130,11 @@ function Library:CreateWindow()
             Btn.BackgroundTransparency = 0.4
         end)
 
-        table.insert(Tabs, {Btn = Btn, Page = Page})
-        if Tabs == 1 then Btn.MouseButton1Click:Fire() end
+        if Tabs == 1 then
+    Page.Visible = true
+    Btn.BackgroundTransparency = 0
+end
+
 
         local Tab = {}
 
