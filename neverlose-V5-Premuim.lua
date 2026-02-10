@@ -13,7 +13,7 @@ local Theme = {
     Text = Color3.fromRGB(255, 255, 255),
     Muted = Color3.fromRGB(160, 165, 180),
     Element = Color3.fromRGB(28, 30, 40),
-    Hover = Color3.fromRGB(40, 42, 55)
+    Hover = Color3.fromRGB(45, 48, 62)
 }
 
 local function ApplyStyle(obj, radius, hasStroke)
@@ -27,21 +27,34 @@ local function ApplyStyle(obj, radius, hasStroke)
     end
 end
 
+-- ИСПРАВЛЕННАЯ ФУНКЦИЯ ПЕРЕМЕЩЕНИЯ (ТОЛЬКО ЗА ХЕНДЛ)
 local function MakeDraggable(obj, handle)
     local dragging, dragInput, dragStart, startPos
     handle.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true dragStart = input.Position startPos = obj.Position
+            dragging = true
+            dragStart = input.Position
+            startPos = obj.Position
+            
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
         end
     end)
+
+    handle.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement then
+            dragInput = input
+        end
+    end)
+
     UserInputService.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
+        if input == dragInput and dragging then
             local delta = input.Position - dragStart
             obj.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
         end
-    end)
-    UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
     end)
 end
 
@@ -60,7 +73,6 @@ function Library:CreateWindow()
     Main.BackgroundColor3 = Theme.Main
     Main.GroupTransparency = 1
     ApplyStyle(Main, 10, true)
-    MakeDraggable(Main, Main)
     
     TweenService:Create(Main, TweenInfo.new(0.5), {GroupTransparency = 0}):Play()
 
@@ -68,8 +80,10 @@ function Library:CreateWindow()
     Sidebar.Size = UDim2.new(0, 200, 1, 0)
     Sidebar.BackgroundColor3 = Theme.Sidebar
     ApplyStyle(Sidebar, 10)
+    
+    -- ТЕПЕРЬ ДВИГАТЬ МОЖНО ТОЛЬКО ЗА САЙДБАР
+    MakeDraggable(Main, Sidebar)
 
-    -- Логотип
     local Logo = Instance.new("Frame", Sidebar)
     Logo.Size = UDim2.new(1, 0, 0, 80); Logo.BackgroundTransparency = 1
     local Icon = Instance.new("Frame", Logo); Icon.Size = UDim2.new(0, 26, 0, 26); Icon.Position = UDim2.new(0, 20, 0, 25); Icon.BackgroundColor3 = Theme.Accent; ApplyStyle(Icon, 6)
@@ -122,7 +136,12 @@ function Library:CreateWindow()
             for _, sName in pairs(names) do
                 local sBtn = Instance.new("TextButton", SubTabHolder)
                 sBtn.Size = UDim2.new(0, 90, 1, 0); sBtn.BackgroundTransparency = 1; sBtn.Text = sName; sBtn.Font = "GothamBold"; sBtn.TextColor3 = Theme.Muted; sBtn.TextSize = 12
+                sBtn.MouseButton1Click:Connect(function()
+                   for _, b in pairs(SubTabHolder:GetChildren()) do if b:IsA("TextButton") then b.TextColor3 = Theme.Muted end end
+                   sBtn.TextColor3 = Theme.Accent
+                end)
             end
+            SubTabHolder:GetChildren()[2].TextColor3 = Theme.Accent
         end
 
         function TabFunctions:AddGroup(title)
@@ -135,9 +154,9 @@ function Library:CreateWindow()
 
             function ElementFunctions:AddToggle(txt, callback)
                 local state = false
-                local F = Instance.new("Frame", Container); F.Size = UDim2.new(1, 0, 0, 24); F.BackgroundTransparency = 1
+                local F = Instance.new("Frame", Container); F.Size = UDim2.new(1, 0, 0, 26); F.BackgroundTransparency = 1
                 local L = Instance.new("TextLabel", F); L.Text = txt; L.Size = UDim2.new(1, 0, 1, 0); L.Font = "GothamMedium"; L.TextColor3 = Theme.Text; L.TextSize = 14; L.TextXAlignment = "Left"; L.BackgroundTransparency = 1
-                local Sw = Instance.new("TextButton", F); Sw.Size = UDim2.new(0, 36, 0, 18); Sw.Position = UDim2.new(1, 0, 0.5, 0); Sw.AnchorPoint = Vector2.new(1,0.5); Sw.BackgroundColor3 = Theme.Element; Sw.Text = ""; ApplyStyle(Sw, 10, true)
+                local Sw = Instance.new("TextButton", F); Sw.Size = UDim2.new(0, 38, 0, 18); Sw.Position = UDim2.new(1, 0, 0.5, 0); Sw.AnchorPoint = Vector2.new(1,0.5); Sw.BackgroundColor3 = Theme.Element; Sw.Text = ""; ApplyStyle(Sw, 10, true)
                 local D = Instance.new("Frame", Sw); D.Size = UDim2.new(0, 12, 0, 12); D.Position = UDim2.new(0, 3, 0.5, -6); D.BackgroundColor3 = Theme.Muted; ApplyStyle(D, 10)
                 Sw.MouseButton1Click:Connect(function()
                     state = not state
@@ -153,6 +172,7 @@ function Library:CreateWindow()
                 local V = Instance.new("TextLabel", F); V.Text = tostring(min)..suffix; V.Size = UDim2.new(0.4, 0, 0, 18); V.Position = UDim2.new(0.6,0,0,0); V.Font = "GothamMedium"; V.TextColor3 = Theme.Accent; V.TextSize = 13; V.TextXAlignment = "Right"; V.BackgroundTransparency = 1
                 local Bar = Instance.new("Frame", F); Bar.Size = UDim2.new(1, 0, 0, 4); Bar.Position = UDim2.new(0, 0, 0, 26); Bar.BackgroundColor3 = Theme.Element; ApplyStyle(Bar, 2)
                 local Fill = Instance.new("Frame", Bar); Fill.Size = UDim2.new(0, 0, 1, 0); Fill.BackgroundColor3 = Theme.Accent; ApplyStyle(Fill, 2)
+                
                 local function update(input)
                     local pos = math.clamp((input.Position.X - Bar.AbsolutePosition.X) / Bar.AbsoluteSize.X, 0, 1)
                     Fill.Size = UDim2.new(pos, 0, 1, 0)
@@ -168,15 +188,33 @@ function Library:CreateWindow()
                 end)
             end
 
-            -- ВОТ ЭТОТ МЕТОД БЫЛ УПУЩЕН:
             function ElementFunctions:AddDropdown(txt, options, callback)
                 local F = Instance.new("Frame", Container); F.Size = UDim2.new(1, 0, 0, 24); F.BackgroundTransparency = 1
                 local L = Instance.new("TextLabel", F); L.Text = txt; L.Size = UDim2.new(0.5, 0, 1, 0); L.Font = "GothamMedium"; L.TextColor3 = Theme.Text; L.TextSize = 14; L.TextXAlignment = "Left"; L.BackgroundTransparency = 1
-                local Box = Instance.new("TextButton", F); Box.Size = UDim2.new(0.45, 0, 1, 0); Box.Position = UDim2.new(1, 0, 0, 0); Box.AnchorPoint = Vector2.new(1,0); Box.BackgroundColor3 = Theme.Element; Box.Text = " " .. (options[1] or ""); Box.Font = "GothamMedium"; Box.TextColor3 = Theme.Muted; Box.TextSize = 12; Box.TextXAlignment = "Left"; ApplyStyle(Box, 4, true)
-                Box.MouseButton1Click:Connect(function() 
-                   -- Логика раскрытия списка (можно добавить Overlay позже)
-                   if callback then callback(options[1]) end 
+                local Box = Instance.new("TextButton", F); Box.Size = UDim2.new(0.45, 0, 1, 0); Box.Position = UDim2.new(1, 0, 0, 0); Box.AnchorPoint = Vector2.new(1,0); Box.BackgroundColor3 = Theme.Element; Box.Text = " " .. (options[1] or ""); Box.Font = "GothamMedium"; Box.TextColor3 = Theme.Text; Box.TextSize = 12; Box.TextXAlignment = "Left"; ApplyStyle(Box, 4, true)
+                
+                Box.MouseButton1Click:Connect(function()
+                    if Overlay:FindFirstChild("DropMenu") then Overlay.DropMenu:Destroy() return end
+                    local DropMenu = Instance.new("ScrollingFrame", Overlay)
+                    DropMenu.Name = "DropMenu"
+                    local itemH = 28
+                    DropMenu.Size = UDim2.new(0, Box.AbsoluteSize.X, 0, math.min(#options * itemH + 8, 200))
+                    DropMenu.Position = UDim2.new(0, Box.AbsolutePosition.X, 0, Box.AbsolutePosition.Y + Box.AbsoluteSize.Y + 2)
+                    DropMenu.BackgroundColor3 = Theme.Element; DropMenu.ScrollBarThickness = 0; DropMenu.ZIndex = 10000; ApplyStyle(DropMenu, 6, true)
+                    Instance.new("UIListLayout", DropMenu)
+                    for _, opt in pairs(options) do
+                        local oBtn = Instance.new("TextButton", DropMenu)
+                        oBtn.Size = UDim2.new(1,0,0,itemH); oBtn.BackgroundColor3 = Theme.Element; oBtn.Text = "  "..opt; oBtn.Font = "GothamMedium"; oBtn.TextColor3 = Theme.Muted; oBtn.TextSize = 13; oBtn.TextXAlignment = "Left"
+                        oBtn.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then Box.Text = "  "..opt; DropMenu:Destroy(); if callback then callback(opt) end end end)
+                    end
                 end)
+            end
+
+            function ElementFunctions:AddArrow(txt, callback)
+               local F = Instance.new("Frame", Container); F.Size = UDim2.new(1, 0, 0, 24); F.BackgroundTransparency = 1
+               local L = Instance.new("TextLabel", F); L.Text = txt; L.Size = UDim2.new(1, 0, 1, 0); L.Font = "GothamMedium"; L.TextColor3 = Theme.Text; L.TextSize = 14; L.TextXAlignment = "Left"; L.BackgroundTransparency = 1
+               local A = Instance.new("TextButton", F); A.Size = UDim2.new(0, 20, 1, 0); A.Position = UDim2.new(1, 0, 0, 0); A.AnchorPoint = Vector2.new(1,0); A.BackgroundTransparency = 1; A.Text = ">"; A.Font = "GothamBold"; A.TextColor3 = Theme.Muted; A.TextSize = 16
+               A.MouseButton1Click:Connect(function() if callback then callback() end end)
             end
 
             return ElementFunctions
